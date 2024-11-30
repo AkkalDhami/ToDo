@@ -2,49 +2,48 @@ let toDoContainer = document.querySelector("#taskLists");
 let toDoForm = document.querySelector("#toDoForm");
 let taskInput = document.querySelector("#taskInput");
 
-// Retrieve tasks from localStorage and render them
 document.addEventListener("DOMContentLoaded", () => {
-    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    tasks.forEach((task) => {
-        let icon = task.isComplete
-            ? `<i class="fa-solid fa-circle-check"></i>`
-            : `<i class="fa-regular fa-circle"></i>`;
-        let color = task.isComplete ? "text-green-500" : "text-red-500";
-        addToDo(task.id, task.text, icon, color);
-    });
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.forEach((task) => {
+    let icon = task.isComplete
+      ? `<i class="fa-solid fa-circle-check"></i>`
+      : `<i class="fa-regular fa-circle"></i>`;
+    let color = task.isComplete ? "text-green-500" : "text-red-500";
+    addToDo(task.id, task.text, icon, color);
+  });
 });
 
 toDoForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (!validInput()) return;
+  let taskInputValue = taskInput.value.trim();
+  e.preventDefault();
+  if (!validInput()) return;
 
-    let taskInputValue = taskInput.value.trim();
-    let taskId = Date.now();
+  let taskId = Date.now();
 
-    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    tasks.push({ id: taskId, text: taskInputValue, isComplete: false, color: "text-red-500" });
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.push({ id: taskId, text: taskInputValue, isComplete: false, color: "text-red-500" });
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 
-    addToDo(taskId, taskInputValue, `<i class="fa-regular fa-circle"></i>`, "text-red-500");
+  addToDo(taskId, taskInputValue, `<i class="fa-regular fa-circle"></i>`, "text-red-500");
 
-    clearInput();
+  clearInput();
 });
 
 function validInput() {
-    let taskInputValue = taskInput.value.trim();
-    if (taskInputValue === "") {
-        alert("Task input field cannot be empty.");
-        return false;
-    }
-    return true;
+  let taskInputValue = taskInput.value.trim();
+  if (taskInputValue === "") {
+    alert("Task input field cannot be empty.");
+    return false;
+  }
+  return true;
 }
 
 function clearInput() {
-    taskInput.value = "";
+  taskInput.value = "";
 }
 
 function addToDo(id, input, icon, color) {
-    toDoContainer.innerHTML += `
+  toDoContainer.innerHTML += `
     <li
          id="todo${id}"
          class="text-xl rounded-lg flex border border-gray-500 hover:border-[#1ccc0f] duration-300 justify-between items-center px-3 py-4 w-full"
@@ -54,14 +53,14 @@ function addToDo(id, input, icon, color) {
              ${icon}
            </h3>
            <p class="grow text-[18px]">${input}</p>
-           <button
-             class="editToDo text-[22px] text-white font-medium hover:text-orange-500 duration-300"
+           <button  onclick="editToDo(${id})"
+             class="editToDo text-[22px] text-gray-400 font-medium hover:text-orange-500 duration-300"
            >
              <i class="fa-regular fa-pen-to-square"></i>
            </button>
            
            <button
-             class="deleteToDo text-[22px] text-white font-medium hover:text-orange-500 duration-300"
+             class="deleteToDo text-[22px] text-gray-400 font-medium hover:text-orange-500 duration-300"
              onclick="deleteTask(${id})"
            >
              <i class="fa-solid fa-xmark"></i>
@@ -71,38 +70,53 @@ function addToDo(id, input, icon, color) {
  `;
 }
 
-function deleteTask(id) {
-    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    tasks = tasks.filter((task) => task.id !== id);
-    localStorage.setItem("tasks", JSON.stringify(tasks));
 
-    document.querySelector(`#todo${id}`).remove();
+function editToDo(id) {
+
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.filter((task) => task.id === id);
+  let taskInputValue = tasks[0].text;
+  console.log(taskInputValue)
+  taskInput.value = taskInputValue;
+  taskInput.focus();
+  taskInput.select();
+  deleteTask(id)
+}
+
+
+
+function deleteTask(id) {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.filter((task) => task.id !== id);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+
+  document.querySelector(`#todo${id}`).remove();
 }
 
 function checkedToDo(id) {
-    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-    tasks = tasks.map((task) => {
-        if (task.id === id) {
-            task.isComplete = !task.isComplete;
-            task.color = task.isComplete ? "text-green-500" : "text-red-500";
-        }
-        return task;
-    });
-
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-
-    let taskElement = document.querySelector(`#todo${id} .checkedToDo`);
-    if (taskElement) {
-        let task = tasks.find((task) => task.id === id);
-        if (task.isComplete) {
-            taskElement.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
-            taskElement.classList.remove(`text-red-500`);
-            taskElement.classList.add(`text-green-500`);
-        } else {
-            taskElement.innerHTML = `<i class="fa-regular fa-circle"></i>`;
-            taskElement.classList.add(`text-red-500`);
-            taskElement.classList.remove(`text-green-500`);
-        }
+  tasks = tasks.map((task) => {
+    if (task.id === id) {
+      task.isComplete = !task.isComplete;
+      task.color = task.isComplete ? "text-green-500" : "text-red-500";
     }
+    return task;
+  });
+
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+
+  let taskElement = document.querySelector(`#todo${id} .checkedToDo`);
+  if (taskElement) {
+    let task = tasks.find((task) => task.id === id);
+    if (task.isComplete) {
+      taskElement.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
+      taskElement.classList.remove(`text-red-500`);
+      taskElement.classList.add(`text-green-500`);
+    } else {
+      taskElement.innerHTML = `<i class="fa-regular fa-circle"></i>`;
+      taskElement.classList.add(`text-red-500`);
+      taskElement.classList.remove(`text-green-500`);
+    }
+  }
 }
