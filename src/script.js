@@ -27,6 +27,7 @@ toDoForm.addEventListener("submit", (e) => {
   addToDo(taskId, taskInputValue, `<i class="fa-regular fa-circle"></i>`, "text-red-500");
 
   clearInput();
+
 });
 
 function validInput() {
@@ -68,6 +69,7 @@ function addToDo(id, input, icon, color) {
          </div>
        </li>
  `;
+  updateProgressBar();
 }
 
 
@@ -81,6 +83,7 @@ function editToDo(id) {
   taskInput.focus();
   taskInput.select();
   deleteTask(id)
+  updateProgressBar();
 }
 
 
@@ -91,6 +94,7 @@ function deleteTask(id) {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 
   document.querySelector(`#todo${id}`).remove();
+  updateProgressBar();
 }
 
 function checkedToDo(id) {
@@ -119,4 +123,61 @@ function checkedToDo(id) {
       taskElement.classList.remove(`text-green-500`);
     }
   }
+  updateProgressBar();
+
 }
+
+
+
+function updateProgressBar() {
+  const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+  const totalTasks = tasks.length;
+  const progressBar = document.getElementById('progress-bar');
+  const completedTasks = tasks.filter(task => task.isComplete).length;
+  const percentage = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+  progressBar.style.width = `${percentage}%`;
+
+  // progressBar.classList.add(`w-[${percentage}%]`);
+
+  const tooltip = document.getElementById('tooltip');
+  tooltip.textContent = percentage + '%';
+  console.log(percentage)
+  if (totalTasks === 0) {
+    progressBar.classList.add(`w-[0%]`);
+    tooltip.textContent = '0%';
+  }
+}
+
+updateProgressBar();
+
+window.addEventListener('storage', updateProgressBar);
+
+const progressBarContainer = document.querySelector('.progressBarContainer');
+
+progressBarContainer.addEventListener('mouseenter', () => {
+  const tooltip = document.getElementById('tooltip');
+  tooltip.classList.remove('opacity-0');
+  tooltip.classList.add('opacity-100');
+});
+
+progressBarContainer.addEventListener('mouseleave', () => {
+  const tooltip = document.getElementById('tooltip');
+  tooltip.classList.remove('opacity-100');
+  tooltip.classList.add('opacity-0');
+
+});
+
+
+
+function toggleTaskCompletion(id) {
+  const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+  const taskIndex = tasks.findIndex(task => task.id === id);
+  if (taskIndex !== -1) {
+    tasks[taskIndex].isComplete = !tasks[taskIndex].isComplete;
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    updateProgressBar();
+  }
+}
+
